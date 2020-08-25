@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const validator = require("validator");
 
-const Movie = new mongoose.model("Movie", {
+const movieSchema = new mongoose.Schema({
 	name: {
 		type: String,
 		required: true,
@@ -21,5 +21,7 @@ const Movie = new mongoose.model("Movie", {
 		default: "Action",
 	},
 });
+
+const Movie = mongoose.model("Movie", movieSchema);
 
 module.exports = Movie;
