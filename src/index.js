@@ -1,15 +1,18 @@
 const express = require("express");
+require("dotenv").config();
 
-require("./db/mongoose");
-const movieRouter = require("./routers/movies");
-const userRouter = require("./routers/users");
+const DB = require("./db/mongoose");
 
 const app = express();
 const port = process.env.PORT || 4000;
 
+DB();
+
 app.use(express.json());
-app.use(movieRouter);
-app.use(userRouter);
+app.use("/uploads", express.static("uploads"));
+
+app.use("/movies", require("./routers/movies"));
+app.use("/users", require("./routers/users"));
 
 app.listen(port, () => {
 	console.log(`Server running in ${port}...`);

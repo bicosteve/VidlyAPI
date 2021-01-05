@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const validator = require("validator");
+//const validator = require("validator");
 
 const movieSchema = new mongoose.Schema({
 	name: {
@@ -19,6 +19,14 @@ const movieSchema = new mongoose.Schema({
 	genre: {
 		type: String,
 		default: "Action",
+	},
+	user: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: "User",
+		required: true,
+	},
+	image: {
+		type: Buffer,
 	},
 });
 

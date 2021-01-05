@@ -2,6 +2,9 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+require("dotenv").config();
+
+const Movies = require("./movies");
 
 const userSchema = new mongoose.Schema({
 	username: {
@@ -37,7 +40,28 @@ const userSchema = new mongoose.Schema({
 			},
 		},
 	],
+	avatar: {
+		type: Buffer,
+	},
 });
+
+userSchema.virtual("movie", {
+	ref: "Movie",
+	localField: "_id",
+	foreignField: "user",
+});
+
+//Hidding sensitive data
+userSchema.methods.toJSON = function () {
+	const user = this;
+	const userObject = user.toObject();
+
+	delete userObject.password;
+	delete userObject.tokens;
+	delete userObject.avatar;
+
+	return userObject;
+};
 
 //user methods; finding by credentials
 userSchema.statics.findByCredentials = async (username, password) => {
@@ -57,7 +81,7 @@ userSchema.statics.findByCredentials = async (username, password) => {
 //generating auth tokens
 userSchema.methods.generateAuthToken = async function () {
 	const user = this;
-	const token = jwt.sign({ _id: user._id.toString() }, "secret");
+	const token = jwt.sign({ _id: user._id.toString() }, process.env.JWT_SECRET_KEY);
 
 	user.tokens = user.tokens.concat({ token: token });
 	await user.save();
@@ -73,6 +97,13 @@ userSchema.pre("save", async function (next) {
 		user.password = await bcrypt.hash(user.password, 8);
 	}
 
+	next();
+});
+
+//cascading deleting user movies
+userSchema.pre("remove", async function (next) {
+	const user = this;
+	await Movies.deleteMany({ user: user._id });
 	next();
 });
 
